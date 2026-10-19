@@ -1,42 +1,48 @@
-# Reconstructed Uber Architecture (Flutter)
+# Student Ride-Sharing Prototype
 
-This Flutter application is reverse-engineered from and built upon the technical architectural findings of the official **Uber Android APK (`com.ubercab` v4.653.10004)**.
+A Flutter prototype exploring a student ride-sharing experience. It demonstrates a map-based trip flow: choose a destination, preview a route, compare ride categories and estimated fares, and request a ride.
 
----
+This is a completed prototype, not a live ride service. Nearby vehicles are synthetic, and ride requests use a simulated dispatch flow that assigns a predefined driver after a short delay. The app has no backend, live driver dispatch, student verification, or shared-ride matching.
 
-## Architecture Mapping to Native Libraries
+## Features
 
-| Native APK Binary | Reverse-Engineered Role | Flutter Architectural Layer |
-| :--- | :--- | :--- |
-| `libubermaps-gl.so` | Custom GPU vector map rendering, polylines, 3D buildings, dynamic camera | `lib/presentation/widgets/interactive_vector_map.dart`, `lib/models/trip_route.dart` |
-| `libh3.so` | Hexagonal spatial indexing, cellular vehicle grouping, proximity search | `lib/core/spatial/h3_index.dart`, `lib/core/spatial/geo_coordinates.dart` |
-| `libse.so` & `libse_loader.so` | Security Engine, root/tamper detection, emulator detection, integrity checks | `lib/core/security/security_engine.dart` |
-| `libndk-crash.so` & `libndk-anr.so` | Low-level POSIX signal hooks, crash pipe logging, watchdog telemetry | `lib/core/telemetry/native_crash_bridge.dart` |
-| `libml-imageproc.so` | ML buffer utilities & image preprocessing | `lib/services/location_service.dart`, `lib/models/vehicle_marker.dart` |
+- Custom Flutter vector map with synthetic nearby vehicles and route visualization.
+- Destination selection and generated route previews with distance and duration estimates.
+- Ride category selection and fare estimates.
+- A simulated ride-request and driver-assignment flow.
+- A pure Dart H3-style spatial indexing implementation, with an optional map grid visualization.
+- Prototype security-status and device-audit UI.
 
----
+The route geometry, vehicle positions, traffic segments, fares, surge values, and driver details are illustrative prototype data. They should not be treated as live transportation information or production pricing.
 
-## Key Highlights
+## Gemma and Ride Matching
 
-1. **Pure Dart H3 Spatial Indexing (`H3Index`)**
-   - Reconstructs the exact resolution hierarchy, hexagonal cell coordinate transformations, `h3IsValid`, and `kRing` neighbor calculations that Uber's backend and app use to group drivers and calculate surge pricing.
+Gemma is not integrated into the current app. There are no model calls or inference service in this prototype.
 
-2. **Custom Vector Map Canvas (`InteractiveVectorMap`)**
-   - Implements high-performance canvas vector rendering with smooth vehicle bearing rotation, multi-segment traffic polylines (green/yellow/red congestion mirroring `TrafficSegment`), 3D building isometric projections, and custom dark/light theme shaders.
+Gemma is a possible next step for interpreting student ride requests written in natural language—for example, extracting a preferred departure window or willingness to take a detour—and explaining why a ride may be a good fit. A separate, deterministic matching service could compare those preferences with candidate rides using factors such as location, route overlap, timing, and available seats. The model would assist with request interpretation and explanations; explicit, testable matching rules should make the actual selection.
 
-3. **Multi-Layered Security Engine (`SecurityEngine`)**
-   - Emulates Uber's native device integrity validation: checks for test-keys, su binaries, debugger attachments, mock location spoofing, and generates signed integrity tokens for backend requests.
+H3 could help organize nearby candidates spatially, but the current implementation does not perform real driver discovery or ride matching.
 
-4. **Native Crash & ANR Bridge (`NativeCrashBridge`)**
-   - Provides unhandled exception and slow frame detection mimicking Uber's native signal interceptor and self-pipe crash reporter.
+## Run the App
 
----
-
-## Running the Application
-
-Ensure Flutter 3.x+ is installed, then run:
+Requirements: Flutter 3.x or later.
 
 ```bash
 flutter pub get
 flutter run
 ```
+
+## Project Structure
+
+- `lib/presentation/` — map screen, ride selection, driver tracking, and UI widgets.
+- `lib/services/` — prototype ride flow, location, and map styling services.
+- `lib/core/spatial/` — geographic coordinates and H3-style spatial indexing.
+- `lib/core/security/` — prototype device security checks and status reporting.
+- `test/` — tests for spatial indexing and security-engine behavior.
+
+## Limitations
+
+- No server, account system, student verification, or persistent ride data.
+- No real-time locations, driver network, dispatch, or shared-ride matching.
+- Gemma and other AI inference are not implemented.
+- Map, route, fare, traffic, and vehicle information is synthetic and not suitable for navigation, safety, or pricing decisions.
